@@ -59,4 +59,13 @@ public class SkillDto {
     public int hashCode() {
         return Objects.hash(id, language, level);
     }
+
+    @Override
+    public String toString() {
+        return "SkillDto{" +
+                "id=" + id +
+                ", language='" + language + '\'' +
+                ", level=" + level +
+                '}';
+    }
 }

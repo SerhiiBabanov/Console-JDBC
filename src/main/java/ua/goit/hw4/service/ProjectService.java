@@ -2,7 +2,6 @@ package ua.goit.hw4.service;
 
 import ua.goit.hw4.model.dao.ProjectDao;
 import ua.goit.hw4.model.dao.ProjectDeveloperRelationDao;
-import ua.goit.hw4.model.dto.DeveloperDto;
 import ua.goit.hw4.model.dto.ProjectDto;
 import ua.goit.hw4.repository.ProjectDeveloperRelationRepository;
 import ua.goit.hw4.repository.ProjectRepository;
@@ -11,6 +10,7 @@ import ua.goit.hw4.service.conventer.ProjectConverter;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ProjectService {
     private final ProjectRepository projectRepository;
@@ -46,21 +46,24 @@ public class ProjectService {
     public void delete(ProjectDto projectDto) {
         projectRepository.delete(projectConverter.to(projectDto));
     }
-    public Long addDeveloperToProject(ProjectDto projectDto, DeveloperDto developerDto){
+    public Long addDeveloperToProject(Long projectId, Long developerId){
         ProjectDeveloperRelationDao projectDeveloperRelationDao = new ProjectDeveloperRelationDao();
-        projectDeveloperRelationDao.setDeveloperId(developerDto.getId());
-        projectDeveloperRelationDao.setProjectId(projectDto.getId());
+        projectDeveloperRelationDao.setProjectId(projectId);
+        projectDeveloperRelationDao.setDeveloperId(developerId);
         projectDeveloperRelationDao = projectDeveloperRelationRepository.save(projectDeveloperRelationDao);
         return projectDeveloperRelationDao.getId();
     }
-    public void deleteDeveloperFromProject(ProjectDto projectDto, DeveloperDto developerDto){
+    public void deleteDeveloperFromProject(Long projectId, Long developerId){
         ProjectDeveloperRelationDao projectDeveloperRelationDao = new ProjectDeveloperRelationDao();
-        projectDeveloperRelationDao.setDeveloperId(developerDto.getId());
-        projectDeveloperRelationDao.setProjectId(projectDto.getId());
+        projectDeveloperRelationDao.setProjectId(projectId);
+        projectDeveloperRelationDao.setDeveloperId(developerId);
         projectDeveloperRelationRepository.delete(projectDeveloperRelationDao);
     }
     public List<ProjectDto> getProjectsByDeveloperId(Long id){
-        return null;
+
+        return projectRepository.getByDeveloperId(id).stream()
+                .map(projectConverter::from)
+                .collect(Collectors.toList());
     }
 
 }

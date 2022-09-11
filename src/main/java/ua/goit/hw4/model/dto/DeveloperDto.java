@@ -68,4 +68,14 @@ public class DeveloperDto {
     public int hashCode() {
         return Objects.hash(id, name, username, salary);
     }
+
+    @Override
+    public String toString() {
+        return "DeveloperDto{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", username='" + username + '\'' +
+                ", salary=" + salary +
+                '}';
+    }
 }

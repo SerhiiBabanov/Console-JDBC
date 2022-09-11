@@ -1,8 +1,10 @@
 package ua.goit.hw4.service;
 
 import ua.goit.hw4.model.dao.DeveloperDao;
+import ua.goit.hw4.model.dao.DeveloperSkillRelationDao;
 import ua.goit.hw4.model.dto.DeveloperDto;
 import ua.goit.hw4.repository.DeveloperRepository;
+import ua.goit.hw4.repository.DeveloperSkillRelationRepository;
 import ua.goit.hw4.service.conventer.DeveloperConverter;
 
 import java.util.List;
@@ -11,10 +13,12 @@ import java.util.stream.Collectors;
 
 public class DeveloperService {
     private final DeveloperRepository developerRepository;
+    private final DeveloperSkillRelationRepository developerSkillRelationRepository;
     private final DeveloperConverter developerConverter;
 
-    public DeveloperService(DeveloperRepository developerRepository, DeveloperConverter developerConverter) {
+    public DeveloperService(DeveloperRepository developerRepository, DeveloperSkillRelationRepository developerSkillRelationRepository, DeveloperConverter developerConverter) {
         this.developerRepository = developerRepository;
+        this.developerSkillRelationRepository = developerSkillRelationRepository;
         this.developerConverter = developerConverter;
     }
 
@@ -46,4 +50,17 @@ public class DeveloperService {
                 .map(developerConverter::from)
                 .collect(Collectors.toList());
     }
+    public long addSkill(Long developerId, Long skillId){
+        DeveloperSkillRelationDao dao = new DeveloperSkillRelationDao();
+        dao.setDeveloperId(developerId);
+        dao.setSkillId(skillId);
+        return developerSkillRelationRepository.save(dao).getId();
+    }
+    public void deleteSkill(Long developerId, Long skillId){
+        DeveloperSkillRelationDao dao = new DeveloperSkillRelationDao();
+        dao.setDeveloperId(developerId);
+        dao.setSkillId(skillId);
+        developerSkillRelationRepository.delete(dao);
+    }
+
 }

@@ -79,4 +79,15 @@ public class ProjectDto {
     public int hashCode() {
         return Objects.hash(id, name, git_url, cost);
     }
+
+    @Override
+    public String toString() {
+        return "ProjectDto{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", git_url='" + git_url + '\'' +
+                ", cost=" + cost +
+                ", date=" + date +
+                '}';
+    }
 }
