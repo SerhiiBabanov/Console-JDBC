@@ -5,7 +5,9 @@ import ua.goit.hw4.model.dto.DeveloperDto;
 import ua.goit.hw4.repository.DeveloperRepository;
 import ua.goit.hw4.service.conventer.DeveloperConverter;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class DeveloperService {
     private final DeveloperRepository developerRepository;
@@ -33,5 +35,15 @@ public class DeveloperService {
 
     public void delete(DeveloperDto developerDto) {
         developerRepository.delete(developerConverter.to(developerDto));
+    }
+    public List<DeveloperDto> getByProjectId(Long id){
+        return developerRepository.getByProjectId(id).stream()
+                .map(developerConverter::from)
+                .collect(Collectors.toList());
+    }
+    public List<DeveloperDto> getBySkillId(Long id){
+        return developerRepository.getBySkillId(id).stream()
+                .map(developerConverter::from)
+                .collect(Collectors.toList());
     }
 }
