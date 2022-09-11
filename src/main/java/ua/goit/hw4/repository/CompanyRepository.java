@@ -7,6 +7,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class CompanyRepository implements Repository<CompanyDao> {
     private static final String INSERT = "insert into companies(name, country) values(?,?)";
@@ -15,6 +16,7 @@ public class CompanyRepository implements Repository<CompanyDao> {
     private static final String UPDATE = "update companies set name = ?, country = ? where id = ? " +
             "returning id, name, country";
     private static final String SELECT_ALL = "select id, name, country from companies";
+    private static final String SELECT_ALL_WITH_IDS = "select id, name, country from companies where id in (?)";
     private final DatabaseManagerConnector manager;
 
     public CompanyRepository(DatabaseManagerConnector manager) {
@@ -64,9 +66,7 @@ public class CompanyRepository implements Repository<CompanyDao> {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     companyDao = new CompanyDao();
-                    companyDao.setId(resultSet.getLong("id"));
-                    companyDao.setName(resultSet.getString("name"));
-                    companyDao.setCountry(resultSet.getString("country"));
+                    getEntity(resultSet, companyDao);
                 }
             }
         } catch (SQLException e) {
@@ -86,9 +86,7 @@ public class CompanyRepository implements Repository<CompanyDao> {
             statement.setLong(3, entity.getId());
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    companyDao.setId(resultSet.getLong("id"));
-                    companyDao.setName(resultSet.getString("name"));
-                    companyDao.setCountry(resultSet.getString("country"));
+                    getEntity(resultSet, companyDao);
                 }
             }
         } catch (SQLException ex) {
@@ -106,9 +104,7 @@ public class CompanyRepository implements Repository<CompanyDao> {
              ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
                 CompanyDao companyDao = new CompanyDao();
-                companyDao.setId(resultSet.getLong("id"));
-                companyDao.setName(resultSet.getString("name"));
-                companyDao.setCountry(resultSet.getString("country"));
+                getEntity(resultSet, companyDao);
                 companyDaoList.add(companyDao);
             }
         } catch (SQLException e) {
@@ -116,5 +112,31 @@ public class CompanyRepository implements Repository<CompanyDao> {
             throw new RuntimeException("Select all companies failed");
         }
         return companyDaoList;
+    }
+    @Override
+    public List<CompanyDao> findByListOfID(List<Long> idList) {
+        List<CompanyDao> companyDaoList = new ArrayList<>();
+        String ids = idList.stream().map(String::valueOf).collect(Collectors.joining(", "));
+        try (Connection connection = manager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SELECT_ALL_WITH_IDS)) {
+            statement.setString(1, ids);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    CompanyDao companyDao = new CompanyDao();
+                    getEntity(resultSet, companyDao);
+                    companyDaoList.add(companyDao);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Select all companies failed");
+        }
+        return companyDaoList;
+    }
+
+    private void getEntity(ResultSet resultSet, CompanyDao companyDao) throws SQLException {
+        companyDao.setId(resultSet.getLong("id"));
+        companyDao.setName(resultSet.getString("name"));
+        companyDao.setCountry(resultSet.getString("country"));
     }
 }

@@ -19,7 +19,8 @@ create table if not exists projects
     id      bigint generated always as identity primary key,
     name    varchar(100) not null,
     git_url varchar(100) unique not null,
-    cost    int
+    cost    int,
+    date    bigint not null
 );
 
 create table if not exists companies

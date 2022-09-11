@@ -8,6 +8,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class SkillRepository implements Repository<SkillDao> {
     private static final String INSERT = "insert into skills(language, level) values(?,?)";
@@ -16,6 +17,12 @@ public class SkillRepository implements Repository<SkillDao> {
     private static final String UPDATE = "update skills set language = ?, level = ? where id = ? " +
             "returning id, language, level";
     private static final String SELECT_ALL = "select id, language, level from skills";
+    private static final String SELECT_ALL_WITH_IDS = "select id, language, level from skills where id in (?)";
+    private static final String SELECT_ALL_WITH_LANGUAGE = "select id, language, level from skills where language = ?";
+    private static final String SELECT_ALL_WITH_LEVEL = "select id, language, level from skills where level = ?";
+    private static final String SELECT_ALL_WITH_DEVELOPER_ID = "select id, developer_id, skill_id " +
+            "from developer_skill_relation" +
+            " where developer_id = ?";
     private final DatabaseManagerConnector manager;
 
     public SkillRepository(DatabaseManagerConnector manager) {
@@ -65,9 +72,7 @@ public class SkillRepository implements Repository<SkillDao> {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     skillDao = new SkillDao();
-                    skillDao.setId(resultSet.getLong("id"));
-                    skillDao.setLanguage(resultSet.getString("language"));
-                    skillDao.setLevel(SkillLevel.valueOf(resultSet.getString("level")));
+                    getEntity(resultSet, skillDao);
                 }
             }
         } catch (SQLException e) {
@@ -87,9 +92,7 @@ public class SkillRepository implements Repository<SkillDao> {
             statement.setLong(3, entity.getId());
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    skillDao.setId(resultSet.getLong("id"));
-                    skillDao.setLanguage(resultSet.getString("language"));
-                    skillDao.setLevel(SkillLevel.valueOf(resultSet.getString("level")));
+                    getEntity(resultSet, skillDao);
                 }
             }
         } catch (SQLException ex) {
@@ -107,9 +110,7 @@ public class SkillRepository implements Repository<SkillDao> {
              ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
                 SkillDao skillDao = new SkillDao();
-                skillDao.setId(resultSet.getLong("id"));
-                skillDao.setLanguage(resultSet.getString("language"));
-                skillDao.setLevel(SkillLevel.valueOf(resultSet.getString("level")));
+                getEntity(resultSet, skillDao);
                 skillDaoList.add(skillDao);
             }
         } catch (SQLException e) {
@@ -117,5 +118,85 @@ public class SkillRepository implements Repository<SkillDao> {
             throw new RuntimeException("Select all skills failed");
         }
         return skillDaoList;
+    }
+
+    @Override
+    public List<SkillDao> findByListOfID(List<Long> idList) {
+        List<SkillDao> skillDaoList = new ArrayList<>();
+        String ids = idList.stream().map(String::valueOf).collect(Collectors.joining(", "));
+        try (Connection connection = manager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SELECT_ALL_WITH_IDS)) {
+            statement.setString(1, ids);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    SkillDao skillDao = new SkillDao();
+                    getEntity(resultSet, skillDao);
+                    skillDaoList.add(skillDao);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Select skills failed");
+        }
+        return skillDaoList;
+    }
+    public List<SkillDao> findByLanguage(String language) {
+        List<SkillDao> skillDaoList = new ArrayList<>();
+        try (Connection connection = manager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SELECT_ALL_WITH_LANGUAGE)) {
+            statement.setString(1, language);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    SkillDao skillDao = new SkillDao();
+                    getEntity(resultSet, skillDao);
+                    skillDaoList.add(skillDao);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Select skills with language failed");
+        }
+        return skillDaoList;
+    }
+    public List<SkillDao> findByLevel(SkillLevel level) {
+        List<SkillDao> skillDaoList = new ArrayList<>();
+        try (Connection connection = manager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SELECT_ALL_WITH_LEVEL)) {
+            statement.setString(1, level.name());
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    SkillDao skillDao = new SkillDao();
+                    getEntity(resultSet, skillDao);
+                    skillDaoList.add(skillDao);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Select skills with level failed");
+        }
+        return skillDaoList;
+    }
+    public List<SkillDao> getByDeveloperId(Long developerId){
+        List<SkillDao> skillDaoList = new ArrayList<>();
+        try (Connection connection = manager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SELECT_ALL_WITH_DEVELOPER_ID)) {
+            statement.setLong(1, developerId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    SkillDao skillDao = new SkillDao();
+                    getEntity(resultSet, skillDao);
+                    skillDaoList.add(skillDao);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Select skills with developerId failed");
+        }
+        return skillDaoList;
+    }
+    private static void getEntity(ResultSet resultSet, SkillDao skillDao) throws SQLException {
+        skillDao.setId(resultSet.getLong("id"));
+        skillDao.setLanguage(resultSet.getString("language"));
+        skillDao.setLevel(SkillLevel.valueOf(resultSet.getString("level")));
     }
 }

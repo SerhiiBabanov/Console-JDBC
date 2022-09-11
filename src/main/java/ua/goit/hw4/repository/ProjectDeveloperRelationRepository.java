@@ -7,6 +7,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ProjectDeveloperRelationRepository implements Repository<ProjectDeveloperRelationDao> {
     private static final String INSERT = "insert into project_developer_relation(project_id, developer_id) values(?,?)";
@@ -18,6 +19,9 @@ public class ProjectDeveloperRelationRepository implements Repository<ProjectDev
             "set project_id = ?, developer_id = ? where id = ? " +
             "returning id, project_id, developer_id";
     private static final String SELECT_ALL = "select id, project_id, developer_id from project_developer_relation";
+    private static final String SELECT_ALL_WITH_IDS = "select id, project_id, developer_id " +
+            "from project_developer_relation" +
+            " where id in (?)";
     private final DatabaseManagerConnector manager;
 
     public ProjectDeveloperRelationRepository(DatabaseManagerConnector manager) {
@@ -67,9 +71,7 @@ public class ProjectDeveloperRelationRepository implements Repository<ProjectDev
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     pdRelationDao = new ProjectDeveloperRelationDao();
-                    pdRelationDao.setId(resultSet.getLong("id"));
-                    pdRelationDao.setProjectId(resultSet.getLong("developer_id"));
-                    pdRelationDao.setDeveloperId(resultSet.getLong("project_id"));
+                    getEntity(resultSet, pdRelationDao);
                 }
             }
         } catch (SQLException e) {
@@ -89,9 +91,7 @@ public class ProjectDeveloperRelationRepository implements Repository<ProjectDev
             statement.setLong(3, entity.getId());
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    pdRelationDao.setId(resultSet.getLong("id"));
-                    pdRelationDao.setProjectId(resultSet.getLong("developer_id"));
-                    pdRelationDao.setDeveloperId(resultSet.getLong("project_id"));
+                    getEntity(resultSet, pdRelationDao);
                 }
             }
         } catch (SQLException ex) {
@@ -109,9 +109,7 @@ public class ProjectDeveloperRelationRepository implements Repository<ProjectDev
              ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
                 ProjectDeveloperRelationDao pdRelationDao = new ProjectDeveloperRelationDao();
-                pdRelationDao.setId(resultSet.getLong("id"));
-                pdRelationDao.setProjectId(resultSet.getLong("developer_id"));
-                pdRelationDao.setDeveloperId(resultSet.getLong("project_id"));
+                getEntity(resultSet, pdRelationDao);
                 pdRelationDaoList.add(pdRelationDao);
             }
         } catch (SQLException e) {
@@ -119,5 +117,32 @@ public class ProjectDeveloperRelationRepository implements Repository<ProjectDev
             throw new RuntimeException("Select all relation between projects and developers failed");
         }
         return pdRelationDaoList;
+    }
+
+    @Override
+    public List<ProjectDeveloperRelationDao> findByListOfID(List<Long> idList) {
+        List<ProjectDeveloperRelationDao> pdRelationDaoList = new ArrayList<>();
+        String ids = idList.stream().map(String::valueOf).collect(Collectors.joining(", "));
+        try (Connection connection = manager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SELECT_ALL_WITH_IDS)) {
+            statement.setString(1, ids);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    ProjectDeveloperRelationDao pdRelationDao = new ProjectDeveloperRelationDao();
+                    getEntity(resultSet, pdRelationDao);
+                    pdRelationDaoList.add(pdRelationDao);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Select relations between projects and developers failed");
+        }
+        return pdRelationDaoList;
+    }
+
+    private static void getEntity(ResultSet resultSet, ProjectDeveloperRelationDao pdRelationDao) throws SQLException {
+        pdRelationDao.setId(resultSet.getLong("id"));
+        pdRelationDao.setProjectId(resultSet.getLong("developer_id"));
+        pdRelationDao.setDeveloperId(resultSet.getLong("project_id"));
     }
 }

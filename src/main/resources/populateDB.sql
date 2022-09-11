@@ -25,18 +25,18 @@ values ('Dima Aushev', 'dima.aushev@example.com');
 insert into customers (name, email)
 values ('Viktoriia Shynkar', 'viktoriia.shynkar@example.com');
 
-insert into projects (name, git_url, cost)
-values ('SQLDiagramManager', 'localhost:1001/SQLDiagramManager.git', 500000);
-insert into projects (name, git_url, cost)
-values ('SQLSyntaxChecker', 'localhost:1001/SQLSyntaxChecker.git', 730000);
-insert into projects (name, git_url, cost)
+insert into projects (name, git_url, cost, date)
+values ('SQLDiagramManager', 'localhost:1001/SQLDiagramManager.git', 500000, 1654905600);
+insert into projects (name, git_url, cost, date)
+values ('SQLSyntaxChecker', 'localhost:1001/SQLSyntaxChecker.git', 730000, 1661385600);
+insert into projects (name, git_url, cost, date)
 values ('TimeManagingSystem',
-        'localhost:1001/TimeManagingSystem.git', 480000);
-insert into projects (name, git_url, cost)
-values ('ImageSearchEngine', 'localhost:1001/ImageSearchEngine.git', 365000);
-insert into projects (name, git_url, cost)
+        'localhost:1001/TimeManagingSystem.git', 480000, 1659571200);
+insert into projects (name, git_url, cost, date)
+values ('ImageSearchEngine', 'localhost:1001/ImageSearchEngine.git', 365000, 1644883200);
+insert into projects (name, git_url, cost, date)
 values ('CylinderDeactivationControlSystem',
-        'localhost:1001/CylinderDeactivationControlSystem.git', 120050);
+        'localhost:1001/CylinderDeactivationControlSystem.git', 120050, 1647820800);
 
 insert into skills (language, level)
 values ('Java', 'Junior');
@@ -133,35 +133,59 @@ where p.name = 'CylinderDeactivationControlSystem'
 
 insert into developer_skill_relation (developer_id, skill_id)
 select d.id, s.id
-    from developers as d, skills as s
-where d.username = 'serhii_babanov' and s.language = 'Java' and s.level = 'Junior';
+from developers as d,
+     skills as s
+where d.username = 'serhii_babanov'
+  and s.language = 'Java'
+  and s.level = 'Junior';
 insert into developer_skill_relation (developer_id, skill_id)
 select d.id, s.id
-    from developers as d, skills as s
-where d.username = 'serhii_babanov' and s.language = 'SQL' and s.level = 'Middle';
+from developers as d,
+     skills as s
+where d.username = 'serhii_babanov'
+  and s.language = 'SQL'
+  and s.level = 'Middle';
 insert into developer_skill_relation (developer_id, skill_id)
 select d.id, s.id
-    from developers as d, skills as s
-where d.username = 'andrii_zerko' and s.language = 'Java' and s.level = 'Senior';
+from developers as d,
+     skills as s
+where d.username = 'andrii_zerko'
+  and s.language = 'Java'
+  and s.level = 'Senior';
 insert into developer_skill_relation (developer_id, skill_id)
 select d.id, s.id
-    from developers as d, skills as s
-where d.username = 'andrii_zerko' and s.language = 'C' and s.level = 'Junior';
+from developers as d,
+     skills as s
+where d.username = 'andrii_zerko'
+  and s.language = 'C'
+  and s.level = 'Junior';
 insert into developer_skill_relation (developer_id, skill_id)
 select d.id, s.id
-    from developers as d, skills as s
-where d.username = 'anna_zadoiko' and s.language = 'SQL' and s.level = 'Middle';
+from developers as d,
+     skills as s
+where d.username = 'anna_zadoiko'
+  and s.language = 'SQL'
+  and s.level = 'Middle';
 insert into developer_skill_relation (developer_id, skill_id)
 select d.id, s.id
-    from developers as d, skills as s
-where d.username = 'anna_zadoiko' and s.language = 'JavaScript' and s.level = 'Middle';
+from developers as d,
+     skills as s
+where d.username = 'anna_zadoiko'
+  and s.language = 'JavaScript'
+  and s.level = 'Middle';
 insert into developer_skill_relation (developer_id, skill_id)
 select d.id, s.id
-    from developers as d, skills as s
-where d.username = 'kostiantyn_maslak' and s.language = 'C' and s.level = 'Senior';
+from developers as d,
+     skills as s
+where d.username = 'kostiantyn_maslak'
+  and s.language = 'C'
+  and s.level = 'Senior';
 insert into developer_skill_relation (developer_id, skill_id)
 select d.id, s.id
-    from developers as d, skills as s
-where d.username = 'kostiantyn_maslak' and s.language = 'JavaScript' and s.level = 'Middle';
+from developers as d,
+     skills as s
+where d.username = 'kostiantyn_maslak'
+  and s.language = 'JavaScript'
+  and s.level = 'Middle';
 
 

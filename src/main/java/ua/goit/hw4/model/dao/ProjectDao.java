@@ -7,21 +7,24 @@ public class ProjectDao {
     private String name;
     private String git_url;
     private Integer cost;
+    private Long date;
 
     public ProjectDao() {
     }
 
-    public ProjectDao(String name, String git_url, Integer cost) {
+    public ProjectDao(String name, String git_url, Integer cost, Long date) {
         this.name = name;
         this.git_url = git_url;
         this.cost = cost;
+        this.date = date;
     }
 
-    public ProjectDao(Long id, String name, String git_url, Integer cost) {
+    public ProjectDao(Long id, String name, String git_url, Integer cost, Long date) {
         this.id = id;
         this.name = name;
         this.git_url = git_url;
         this.cost = cost;
+        this.date = date;
     }
 
     public Long getId() {
@@ -54,6 +57,14 @@ public class ProjectDao {
 
     public void setCost(Integer cost) {
         this.cost = cost;
+    }
+
+    public Long getDate() {
+        return date;
+    }
+
+    public void setDate(Long date) {
+        this.date = date;
     }
 
     @Override

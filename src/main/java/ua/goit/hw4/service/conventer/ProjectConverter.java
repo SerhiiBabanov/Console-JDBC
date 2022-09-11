@@ -11,6 +11,7 @@ public class ProjectConverter implements Converter<ProjectDto, ProjectDao> {
         projectDto.setName(projectDao.getName());
         projectDto.setGit_url(projectDao.getGit_url());
         projectDto.setCost(projectDao.getCost());
+        projectDto.setDate(projectDao.getDate());
         return projectDto;
     }
 
@@ -21,6 +22,7 @@ public class ProjectConverter implements Converter<ProjectDto, ProjectDao> {
         projectDao.setName(projectDto.getName());
         projectDao.setGit_url(projectDto.getGit_url());
         projectDao.setCost(projectDto.getCost());
+        projectDao.setDate(projectDto.getDate());
         return projectDao;
     }
 }

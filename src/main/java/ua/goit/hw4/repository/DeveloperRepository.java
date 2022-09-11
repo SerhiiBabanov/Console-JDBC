@@ -3,10 +3,12 @@ package ua.goit.hw4.repository;
 import ua.goit.hw4.config.DatabaseManagerConnector;
 import ua.goit.hw4.model.dao.DeveloperDao;
 
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class DeveloperRepository implements Repository<DeveloperDao> {
     private static final String INSERT = "insert into developers(name, username, salary) values(?,?,?)";
@@ -15,6 +17,14 @@ public class DeveloperRepository implements Repository<DeveloperDao> {
     private static final String UPDATE = "update developers set name = ?, username = ?, salary = ? where id = ? " +
             "returning id, name, username, salary";
     private static final String SELECT_ALL = "select id, name, username, salary from developers";
+    private static final String SELECT_ALL_WITH_IDS = "select id, name, username, salary from developers " +
+            "where id in (?)";
+    private static final String SELECT_ALL_WITH_SKILL_ID = "select id, developer_id, skill_id " +
+            "from developer_skill_relation" +
+            " where skill_id = ?";
+    private static final String SELECT_ALL_WITH_PROJECT_ID = "select id, project_id, developer_id " +
+            "from project_developer_relation" +
+            " where project_id = ?";
     private final DatabaseManagerConnector manager;
 
     public DeveloperRepository(DatabaseManagerConnector manager) {
@@ -66,10 +76,7 @@ public class DeveloperRepository implements Repository<DeveloperDao> {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     developerDao = new DeveloperDao();
-                    developerDao.setId(resultSet.getLong("id"));
-                    developerDao.setName(resultSet.getString("name"));
-                    developerDao.setUsername(resultSet.getString("username"));
-                    developerDao.setSalary(resultSet.getInt("salary"));
+                    getEntity(resultSet, developerDao);
                 }
             }
         } catch (SQLException e) {
@@ -90,10 +97,7 @@ public class DeveloperRepository implements Repository<DeveloperDao> {
             statement.setLong(4, entity.getId());
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    developerDao.setId(resultSet.getLong("id"));
-                    developerDao.setName(resultSet.getString("name"));
-                    developerDao.setUsername(resultSet.getString("username"));
-                    developerDao.setSalary(resultSet.getInt("salary"));
+                    getEntity(resultSet, developerDao);
                 }
             }
         } catch (SQLException ex) {
@@ -111,10 +115,7 @@ public class DeveloperRepository implements Repository<DeveloperDao> {
              ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
                 DeveloperDao developerDao = new DeveloperDao();
-                developerDao.setId(resultSet.getLong("id"));
-                developerDao.setName(resultSet.getString("name"));
-                developerDao.setUsername(resultSet.getString("username"));
-                developerDao.setSalary(resultSet.getInt("salary"));
+                getEntity(resultSet, developerDao);
                 developerDaoList.add(developerDao);
             }
         } catch (SQLException e) {
@@ -123,4 +124,69 @@ public class DeveloperRepository implements Repository<DeveloperDao> {
         }
         return developerDaoList;
     }
+
+    @Override
+    public List<DeveloperDao> findByListOfID(List<Long> idList) {
+        List<DeveloperDao> developerDaoList = new ArrayList<>();
+        String ids = idList.stream().map(String::valueOf).collect(Collectors.joining(", "));
+        try (Connection connection = manager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SELECT_ALL_WITH_IDS)) {
+            statement.setString(1, ids);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    DeveloperDao developerDao = new DeveloperDao();
+                    getEntity(resultSet, developerDao);
+                    developerDaoList.add(developerDao);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Select developers failed");
+        }
+        return developerDaoList;
+    }
+    public List<DeveloperDao> getBySkillId(Long skillId){
+        List<DeveloperDao> developerDaoList = new ArrayList<>();
+        try (Connection connection = manager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SELECT_ALL_WITH_SKILL_ID)) {
+            statement.setLong(1, skillId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    DeveloperDao developerDao = new DeveloperDao();
+                    getEntity(resultSet, developerDao);
+                    developerDaoList.add(developerDao);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Select developers with skill failed");
+        }
+        return developerDaoList;
+    }
+    public List<DeveloperDao> getByProjectId(Long projectId){
+        List<DeveloperDao> developerDaoList = new ArrayList<>();
+        try (Connection connection = manager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SELECT_ALL_WITH_PROJECT_ID)) {
+            statement.setLong(1, projectId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    DeveloperDao developerDao = new DeveloperDao();
+                    getEntity(resultSet, developerDao);
+                    developerDaoList.add(developerDao);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Select developers with project failed");
+        }
+        return developerDaoList;
+    }
+
+    protected static void getEntity(ResultSet resultSet, DeveloperDao developerDao) throws SQLException {
+        developerDao.setId(resultSet.getLong("id"));
+        developerDao.setName(resultSet.getString("name"));
+        developerDao.setUsername(resultSet.getString("username"));
+        developerDao.setSalary(resultSet.getInt("salary"));
+    }
+
 }

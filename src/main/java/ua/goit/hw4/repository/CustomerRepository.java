@@ -7,6 +7,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class CustomerRepository implements Repository<CustomerDao> {
     private static final String INSERT = "insert into customers(name, email) values(?,?)";
@@ -15,6 +16,7 @@ public class CustomerRepository implements Repository<CustomerDao> {
     private static final String UPDATE = "update customers set name = ?, email = ? where id = ? " +
             "returning id, name, email";
     private static final String SELECT_ALL = "select id, name, email from customers";
+    private static final String SELECT_ALL_WITH_IDS = "select id, name, email from customers where id in (?)";
     private final DatabaseManagerConnector manager;
 
     public CustomerRepository(DatabaseManagerConnector manager) {
@@ -64,9 +66,7 @@ public class CustomerRepository implements Repository<CustomerDao> {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     customerDao = new CustomerDao();
-                    customerDao.setId(resultSet.getLong("id"));
-                    customerDao.setName(resultSet.getString("name"));
-                    customerDao.setEmail(resultSet.getString("email"));
+                    getEntity(resultSet, customerDao);
                 }
             }
         } catch (SQLException e) {
@@ -86,9 +86,7 @@ public class CustomerRepository implements Repository<CustomerDao> {
             statement.setLong(3, entity.getId());
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    customerDao.setId(resultSet.getLong("id"));
-                    customerDao.setName(resultSet.getString("name"));
-                    customerDao.setEmail(resultSet.getString("email"));
+                    getEntity(resultSet, customerDao);
                 }
             }
         } catch (SQLException ex) {
@@ -106,9 +104,7 @@ public class CustomerRepository implements Repository<CustomerDao> {
              ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
                 CustomerDao customerDao = new CustomerDao();
-                customerDao.setId(resultSet.getLong("id"));
-                customerDao.setName(resultSet.getString("name"));
-                customerDao.setEmail(resultSet.getString("email"));
+                getEntity(resultSet, customerDao);
                 customerDaoList.add(customerDao);
             }
         } catch (SQLException e) {
@@ -116,5 +112,31 @@ public class CustomerRepository implements Repository<CustomerDao> {
             throw new RuntimeException("Select all customers failed");
         }
         return customerDaoList;
+    }
+    @Override
+    public List<CustomerDao> findByListOfID(List<Long> idList) {
+        List<CustomerDao> customerDaoList = new ArrayList<>();
+        String ids = idList.stream().map(String::valueOf).collect(Collectors.joining(", "));
+        try (Connection connection = manager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SELECT_ALL_WITH_IDS)) {
+            statement.setString(1, ids);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    CustomerDao customerDao = new CustomerDao();
+                    getEntity(resultSet, customerDao);
+                    customerDaoList.add(customerDao);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Select customers failed");
+        }
+        return customerDaoList;
+    }
+
+    private static void getEntity(ResultSet resultSet, CustomerDao customerDao) throws SQLException {
+        customerDao.setId(resultSet.getLong("id"));
+        customerDao.setName(resultSet.getString("name"));
+        customerDao.setEmail(resultSet.getString("email"));
     }
 }

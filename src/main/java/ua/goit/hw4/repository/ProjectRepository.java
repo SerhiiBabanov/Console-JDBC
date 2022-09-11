@@ -7,14 +7,19 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ProjectRepository implements Repository<ProjectDao> {
-    private static final String INSERT = "insert into projects(name, git_url, cost) values(?,?,?)";
+    private static final String INSERT = "insert into projects(name, git_url, cost, date) values(?,?,?,?)";
     private static final String DELETE = "delete from projects where name = ? and git_url = ? and cost = ?";
-    private static final String SELECT_BY_ID = "select id, name, git_url, cost from projects where id = ?";
-    private static final String UPDATE = "update projects set name = ?, git_url = ?, cost = ? where id = ? " +
+    private static final String SELECT_BY_ID = "select id, name, git_url, cost, date from projects where id = ?";
+    private static final String UPDATE = "update projects set name = ?, git_url = ?, cost = ?, date = ? where id = ? " +
             "returning name, git_url, cost";
-    private static final String SELECT_ALL = "select id, name, git_url, cost from projects";
+    private static final String SELECT_ALL = "select id, name, git_url, cost, date from projects";
+    private static final String SELECT_ALL_WITH_IDS = "select id, name, git_url, cost, date from projects where id in (?)";
+    private static final String SELECT_ALL_WITH_DEVELOPER_ID = "select id, project_id, developer_id " +
+            "from project_developer_relation" +
+            " where developer_id = ?";
     private final DatabaseManagerConnector manager;
 
     public ProjectRepository(DatabaseManagerConnector manager) {
@@ -28,6 +33,7 @@ public class ProjectRepository implements Repository<ProjectDao> {
             statement.setString(1, entity.getName());
             statement.setString(2, entity.getGit_url());
             statement.setInt(3, entity.getCost());
+            statement.setLong(4, entity.getDate());
             statement.executeUpdate();
             try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
@@ -66,10 +72,7 @@ public class ProjectRepository implements Repository<ProjectDao> {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     projectDao = new ProjectDao();
-                    projectDao.setId(resultSet.getLong("id"));
-                    projectDao.setName(resultSet.getString("name"));
-                    projectDao.setGit_url(resultSet.getString("git_url"));
-                    projectDao.setCost(resultSet.getInt("cost"));
+                    getEntity(resultSet, projectDao);
                 }
             }
         } catch (SQLException e) {
@@ -88,12 +91,10 @@ public class ProjectRepository implements Repository<ProjectDao> {
             statement.setString(2, entity.getGit_url());
             statement.setInt(3, entity.getCost());
             statement.setLong(4, entity.getId());
+            statement.setLong(5, entity.getDate());
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    projectDao.setId(resultSet.getLong("id"));
-                    projectDao.setName(resultSet.getString("name"));
-                    projectDao.setGit_url(resultSet.getString("git_url"));
-                    projectDao.setCost(resultSet.getInt("cost"));
+                    getEntity(resultSet, projectDao);
                 }
             }
         } catch (SQLException ex) {
@@ -111,10 +112,7 @@ public class ProjectRepository implements Repository<ProjectDao> {
              ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
                 ProjectDao projectDao = new ProjectDao();
-                projectDao.setId(resultSet.getLong("id"));
-                projectDao.setName(resultSet.getString("name"));
-                projectDao.setGit_url(resultSet.getString("git_url"));
-                projectDao.setCost(resultSet.getInt("cost"));
+                getEntity(resultSet, projectDao);
                 projectDaoList.add(projectDao);
             }
         } catch (SQLException e) {
@@ -122,5 +120,51 @@ public class ProjectRepository implements Repository<ProjectDao> {
             throw new RuntimeException("Select all projects failed");
         }
         return projectDaoList;
+    }
+
+    @Override
+    public List<ProjectDao> findByListOfID(List<Long> idList) {
+        List<ProjectDao> projectDaoList = new ArrayList<>();
+        String ids = idList.stream().map(String::valueOf).collect(Collectors.joining(", "));
+        try (Connection connection = manager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SELECT_ALL_WITH_IDS)) {
+            statement.setString(1, ids);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    ProjectDao projectDao = new ProjectDao();
+                    getEntity(resultSet, projectDao);
+                    projectDaoList.add(projectDao);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Select projects failed");
+        }
+        return projectDaoList;
+    }
+    public List<ProjectDao> getByDeveloperId(Long developerId){
+        List<ProjectDao> projectDaoList = new ArrayList<>();
+        try (Connection connection = manager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SELECT_ALL_WITH_DEVELOPER_ID)) {
+            statement.setLong(1, developerId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    ProjectDao projectDao = new ProjectDao();
+                    getEntity(resultSet, projectDao);
+                    projectDaoList.add(projectDao);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Select projects with developer failed");
+        }
+        return projectDaoList;
+    }
+    private static void getEntity(ResultSet resultSet, ProjectDao projectDao) throws SQLException {
+        projectDao.setId(resultSet.getLong("id"));
+        projectDao.setName(resultSet.getString("name"));
+        projectDao.setGit_url(resultSet.getString("git_url"));
+        projectDao.setCost(resultSet.getInt("cost"));
+        projectDao.setDate(resultSet.getLong("date"));
     }
 }

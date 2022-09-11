@@ -13,5 +13,6 @@ public interface Repository<T> {
     T update(T entity);
 
     List<T> findAll();
+    List<T> findByListOfID(List<Long> idList);
 
 }
