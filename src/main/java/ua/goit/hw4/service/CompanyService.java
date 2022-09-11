@@ -5,7 +5,9 @@ import ua.goit.hw4.model.dto.CompanyDto;
 import ua.goit.hw4.repository.CompanyRepository;
 import ua.goit.hw4.service.conventer.CompanyConverter;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class CompanyService {
     private final CompanyRepository companyRepository;
@@ -34,5 +36,9 @@ public class CompanyService {
     public void delete(CompanyDto companyDto) {
         companyRepository.delete(companyConverter.to(companyDto));
     }
-
+    public List<CompanyDto> getAll(){
+        return companyRepository.findAll().stream()
+                .map(companyConverter::from)
+                .collect(Collectors.toList());
+    }
 }

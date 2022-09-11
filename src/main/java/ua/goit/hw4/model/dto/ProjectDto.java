@@ -1,5 +1,7 @@
 package ua.goit.hw4.model.dto;
 
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Objects;
 
 public class ProjectDto {
@@ -87,7 +89,7 @@ public class ProjectDto {
                 ", name='" + name + '\'' +
                 ", git_url='" + git_url + '\'' +
                 ", cost=" + cost +
-                ", date=" + date +
+                ", date=" + Instant.ofEpochMilli(date).atZone(ZoneId.systemDefault()).toLocalDate() +
                 '}';
     }
 }

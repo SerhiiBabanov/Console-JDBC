@@ -16,7 +16,8 @@ public class ProjectRepository implements Repository<ProjectDao> {
     private static final String UPDATE = "update projects set name = ?, git_url = ?, cost = ?, date = ? where id = ? " +
             "returning name, git_url, cost";
     private static final String SELECT_ALL = "select id, name, git_url, cost, date from projects";
-    private static final String SELECT_ALL_WITH_IDS = "select id, name, git_url, cost, date from projects where id in (?)";
+    private static final String SELECT_ALL_WITH_IDS = "select id, name, git_url, cost, date from projects " +
+            "where id in (%s)";
     private static final String SELECT_ALL_WITH_DEVELOPER_ID = "select id, project_id, developer_id " +
             "from project_developer_relation" +
             " where developer_id = ?";
@@ -125,10 +126,15 @@ public class ProjectRepository implements Repository<ProjectDao> {
     @Override
     public List<ProjectDao> findByListOfID(List<Long> idList) {
         List<ProjectDao> projectDaoList = new ArrayList<>();
-        String ids = idList.stream().map(String::valueOf).collect(Collectors.joining(", "));
+        String stmt = String.format(SELECT_ALL_WITH_IDS,
+                idList.stream()
+                        .map(v -> "?")
+                        .collect(Collectors.joining(", ")));
         try (Connection connection = manager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(SELECT_ALL_WITH_IDS)) {
-            statement.setString(1, ids);
+             PreparedStatement statement = connection.prepareStatement(stmt)) {
+            int index = 1;
+            for( Long id : idList ) {
+                statement.setLong(  index++, id );}
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     ProjectDao projectDao = new ProjectDao();

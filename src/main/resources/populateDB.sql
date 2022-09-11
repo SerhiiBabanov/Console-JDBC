@@ -26,17 +26,17 @@ insert into customers (name, email)
 values ('Viktoriia Shynkar', 'viktoriia.shynkar@example.com');
 
 insert into projects (name, git_url, cost, date)
-values ('SQLDiagramManager', 'localhost:1001/SQLDiagramManager.git', 500000, 1654905600);
+values ('SQLDiagramManager', 'localhost:1001/SQLDiagramManager.git', 500000, 1662073320000);
 insert into projects (name, git_url, cost, date)
-values ('SQLSyntaxChecker', 'localhost:1001/SQLSyntaxChecker.git', 730000, 1661385600);
+values ('SQLSyntaxChecker', 'localhost:1001/SQLSyntaxChecker.git', 730000, 1629586920000);
 insert into projects (name, git_url, cost, date)
 values ('TimeManagingSystem',
-        'localhost:1001/TimeManagingSystem.git', 480000, 1659571200);
+        'localhost:1001/TimeManagingSystem.git', 480000, 1636239720000);
 insert into projects (name, git_url, cost, date)
-values ('ImageSearchEngine', 'localhost:1001/ImageSearchEngine.git', 365000, 1644883200);
+values ('ImageSearchEngine', 'localhost:1001/ImageSearchEngine.git', 365000, 1589151720000);
 insert into projects (name, git_url, cost, date)
 values ('CylinderDeactivationControlSystem',
-        'localhost:1001/CylinderDeactivationControlSystem.git', 120050, 1647820800);
+        'localhost:1001/CylinderDeactivationControlSystem.git', 120050, 1621551720000);
 
 insert into skills (language, level)
 values ('Java', 'Junior');

@@ -43,9 +43,14 @@ public class SkillComands implements Command {
     }
 
     private void get(String[] args) {
-        skillService.getById(Long.valueOf(args[2]))
-                .ifPresentOrElse((value) -> view.write(String.valueOf(value)),
-                        () -> view.write("Don`t find skill"));
+        if (args.length==3) {
+            skillService.getById(Long.valueOf(args[2]))
+                    .ifPresentOrElse((value) -> view.write(String.valueOf(value)),
+                            () -> view.write("Don`t find skill"));
+        } else {
+            skillService.getAll()
+                    .forEach((value) -> view.write(value.toString()));
+        }
     }
 
     private void update(String[] args) {

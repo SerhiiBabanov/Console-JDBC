@@ -16,7 +16,7 @@ public class CustomerRepository implements Repository<CustomerDao> {
     private static final String UPDATE = "update customers set name = ?, email = ? where id = ? " +
             "returning id, name, email";
     private static final String SELECT_ALL = "select id, name, email from customers";
-    private static final String SELECT_ALL_WITH_IDS = "select id, name, email from customers where id in (?)";
+    private static final String SELECT_ALL_WITH_IDS = "select id, name, email from customers where id in (%s)";
     private final DatabaseManagerConnector manager;
 
     public CustomerRepository(DatabaseManagerConnector manager) {
@@ -116,10 +116,15 @@ public class CustomerRepository implements Repository<CustomerDao> {
     @Override
     public List<CustomerDao> findByListOfID(List<Long> idList) {
         List<CustomerDao> customerDaoList = new ArrayList<>();
-        String ids = idList.stream().map(String::valueOf).collect(Collectors.joining(", "));
+        String stmt = String.format(SELECT_ALL_WITH_IDS,
+                idList.stream()
+                        .map(v -> "?")
+                        .collect(Collectors.joining(", ")));
         try (Connection connection = manager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(SELECT_ALL_WITH_IDS)) {
-            statement.setString(1, ids);
+             PreparedStatement statement = connection.prepareStatement(stmt)) {
+            int index = 1;
+            for( Long id : idList ) {
+                statement.setLong(  index++, id );}
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     CustomerDao customerDao = new CustomerDao();

@@ -44,9 +44,15 @@ public class CompanyCommands implements Command {
     }
 
     private void get(String[] args) {
-        companyService.getById(Long.valueOf(args[2]))
-                .ifPresentOrElse((value) -> view.write(String.valueOf(value)),
-                        () -> view.write("Don`t find company"));
+        if (args.length==3) {
+            companyService.getById(Long.valueOf(args[2]))
+                    .ifPresentOrElse((value) -> view.write(String.valueOf(value)),
+                            () -> view.write("Don`t find company"));
+        } else {
+            companyService.getAll()
+                    .forEach((value) -> view.write(value.toString()));
+        }
+
     }
 
     private void update(String[] args) {

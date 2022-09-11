@@ -16,7 +16,7 @@ public class CompanyRepository implements Repository<CompanyDao> {
     private static final String UPDATE = "update companies set name = ?, country = ? where id = ? " +
             "returning id, name, country";
     private static final String SELECT_ALL = "select id, name, country from companies";
-    private static final String SELECT_ALL_WITH_IDS = "select id, name, country from companies where id in (?)";
+    private static final String SELECT_ALL_WITH_IDS = "select id, name, country from companies where id in (%s)";
     private final DatabaseManagerConnector manager;
 
     public CompanyRepository(DatabaseManagerConnector manager) {
@@ -116,10 +116,15 @@ public class CompanyRepository implements Repository<CompanyDao> {
     @Override
     public List<CompanyDao> findByListOfID(List<Long> idList) {
         List<CompanyDao> companyDaoList = new ArrayList<>();
-        String ids = idList.stream().map(String::valueOf).collect(Collectors.joining(", "));
+        String stmt = String.format(SELECT_ALL_WITH_IDS,
+                idList.stream()
+                        .map(v -> "?")
+                        .collect(Collectors.joining(", ")));
         try (Connection connection = manager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(SELECT_ALL_WITH_IDS)) {
-            statement.setString(1, ids);
+             PreparedStatement statement = connection.prepareStatement(stmt)) {
+            int index = 1;
+            for( Long id : idList ) {
+                statement.setLong(  index++, id );}
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     CompanyDao companyDao = new CompanyDao();

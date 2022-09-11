@@ -37,6 +37,11 @@ public class SkillService {
     public void delete(SkillDto skillDto) {
         skillRepository.delete(skillConverter.to(skillDto));
     }
+    public List<SkillDto> getAll(){
+        return skillRepository.findAll().stream()
+                .map(skillConverter::from)
+                .collect(Collectors.toList());
+    }
     public List<SkillDto> getByLanguage(String language){
         return skillRepository.findByLanguage(language).stream()
                 .map(skillConverter::from)

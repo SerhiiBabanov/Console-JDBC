@@ -21,7 +21,7 @@ public class DeveloperSkillRelationRepository implements Repository<DeveloperSki
             "returning id, developer_id, skill_id";
     private static final String SELECT_ALL = "select id, developer_id, skill_id from developer_skill_relation";
     private static final String SELECT_ALL_WITH_IDS = "select id, developer_id, skill_id from developer_skill_relation" +
-            " where id in (?)";
+            " where id in (%s)";
     private static final String SELECT_ALL_WITH_DEVELOPER_ID = "select id, developer_id, skill_id " +
             "from developer_skill_relation" +
             " where developer_id = ?";
@@ -125,10 +125,15 @@ public class DeveloperSkillRelationRepository implements Repository<DeveloperSki
     @Override
     public List<DeveloperSkillRelationDao> findByListOfID(List<Long> idList) {
         List<DeveloperSkillRelationDao> dsRelationDaoList = new ArrayList<>();
-        String ids = idList.stream().map(String::valueOf).collect(Collectors.joining(", "));
+        String stmt = String.format(SELECT_ALL_WITH_IDS,
+                idList.stream()
+                        .map(v -> "?")
+                        .collect(Collectors.joining(", ")));
         try (Connection connection = manager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(SELECT_ALL_WITH_IDS)) {
-            statement.setString(1, ids);
+             PreparedStatement statement = connection.prepareStatement(stmt)) {
+            int index = 1;
+            for( Long id : idList ) {
+                statement.setLong(  index++, id );}
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     DeveloperSkillRelationDao dsRelationDao = new DeveloperSkillRelationDao();

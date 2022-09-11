@@ -1,8 +1,8 @@
 package ua.goit.hw4.command;
 
+import ua.goit.hw4.model.SkillLevel;
 import ua.goit.hw4.model.dto.DeveloperDto;
 import ua.goit.hw4.service.DeveloperService;
-import ua.goit.hw4.service.SkillService;
 import ua.goit.hw4.view.View;
 
 import java.util.List;
@@ -11,12 +11,10 @@ public class DeveloperCommands implements Command {
     private static final String DEVELOPER_COMMANDS = "developer";
     private final View view;
     private final DeveloperService developerService;
-    private final SkillService skillService;
 
-    public DeveloperCommands(View view, DeveloperService developerService, SkillService skillService) {
+    public DeveloperCommands(View view, DeveloperService developerService) {
         this.view = view;
         this.developerService = developerService;
-        this.skillService = skillService;
     }
     @Override
     public boolean canExecute(String input) {
@@ -35,6 +33,8 @@ public class DeveloperCommands implements Command {
                 case "-as" -> addSkillToDeveloper(args);
                 case "-ds" -> deleteSkillFromDeveloper(args);
                 case "-allp" -> getAllDevelopersByProject(args);
+                case "-gslang" -> getAllDevelopersBySkillLanguage(args);
+                case "-gslev" -> getAllDeveloperBySkillLevel(args);
             }
         } catch (RuntimeException e) {
             view.write("parameters incorrect");
@@ -51,9 +51,14 @@ public class DeveloperCommands implements Command {
     }
 
     private void get(String[] args) {
-        developerService.getById(Long.valueOf(args[2]))
-                .ifPresentOrElse((value) -> view.write(String.valueOf(value)),
-                        () -> view.write("Don`t find developer"));
+        if (args.length==3) {
+            developerService.getById(Long.valueOf(args[2]))
+                    .ifPresentOrElse((value) -> view.write(String.valueOf(value)),
+                            () -> view.write("Don`t find developer"));
+        } else {
+            developerService.getAll()
+                    .forEach((value) -> view.write(value.toString()));
+        }
     }
 
     private void update(String[] args) {
@@ -87,6 +92,20 @@ public class DeveloperCommands implements Command {
         List<DeveloperDto> developerDtoList = developerService.getByProjectId(Long.valueOf(args[2]));
         for (DeveloperDto dto: developerDtoList
              ) {
+            System.out.println(dto);
+        }
+    }
+    private void getAllDevelopersBySkillLanguage(String[] args){
+        List<DeveloperDto> developerDtoList = developerService.getBySkillLanguage(args[2]);
+        for (DeveloperDto dto: developerDtoList
+        ) {
+            System.out.println(dto);
+        }
+    }
+    private void getAllDeveloperBySkillLevel(String[] args){
+        List<DeveloperDto> developerDtoList = developerService.getBySkillLevel(SkillLevel.valueOf(args[2]));
+        for (DeveloperDto dto: developerDtoList
+        ) {
             System.out.println(dto);
         }
     }

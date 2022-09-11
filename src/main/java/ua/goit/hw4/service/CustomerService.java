@@ -5,7 +5,9 @@ import ua.goit.hw4.model.dto.CustomerDto;
 import ua.goit.hw4.repository.CustomerRepository;
 import ua.goit.hw4.service.conventer.CustomersConverter;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class CustomerService {
     private final CustomerRepository customerRepository;
@@ -33,5 +35,10 @@ public class CustomerService {
 
     public void delete(CustomerDto customerDto) {
         customerRepository.delete(customersConverter.to(customerDto));
+    }
+    public List<CustomerDto> getAll(){
+        return customerRepository.findAll().stream()
+                .map(customersConverter::from)
+                .collect(Collectors.toList());
     }
 }

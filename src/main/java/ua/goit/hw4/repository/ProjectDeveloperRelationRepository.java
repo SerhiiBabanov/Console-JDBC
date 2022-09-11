@@ -21,7 +21,7 @@ public class ProjectDeveloperRelationRepository implements Repository<ProjectDev
     private static final String SELECT_ALL = "select id, project_id, developer_id from project_developer_relation";
     private static final String SELECT_ALL_WITH_IDS = "select id, project_id, developer_id " +
             "from project_developer_relation" +
-            " where id in (?)";
+            " where id in (%s)";
     private final DatabaseManagerConnector manager;
 
     public ProjectDeveloperRelationRepository(DatabaseManagerConnector manager) {
@@ -122,10 +122,15 @@ public class ProjectDeveloperRelationRepository implements Repository<ProjectDev
     @Override
     public List<ProjectDeveloperRelationDao> findByListOfID(List<Long> idList) {
         List<ProjectDeveloperRelationDao> pdRelationDaoList = new ArrayList<>();
-        String ids = idList.stream().map(String::valueOf).collect(Collectors.joining(", "));
+        String stmt = String.format(SELECT_ALL_WITH_IDS,
+                idList.stream()
+                        .map(v -> "?")
+                        .collect(Collectors.joining(", ")));
         try (Connection connection = manager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(SELECT_ALL_WITH_IDS)) {
-            statement.setString(1, ids);
+             PreparedStatement statement = connection.prepareStatement(stmt)) {
+            int index = 1;
+            for( Long id : idList ) {
+                statement.setLong(  index++, id );}
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     ProjectDeveloperRelationDao pdRelationDao = new ProjectDeveloperRelationDao();

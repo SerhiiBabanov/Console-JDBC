@@ -5,7 +5,6 @@ import ua.goit.hw4.model.dao.ProjectDeveloperRelationDao;
 import ua.goit.hw4.model.dto.ProjectDto;
 import ua.goit.hw4.repository.ProjectDeveloperRelationRepository;
 import ua.goit.hw4.repository.ProjectRepository;
-import ua.goit.hw4.service.conventer.DeveloperConverter;
 import ua.goit.hw4.service.conventer.ProjectConverter;
 
 import java.util.List;
@@ -16,16 +15,13 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final ProjectDeveloperRelationRepository projectDeveloperRelationRepository;
     private final ProjectConverter projectConverter;
-    private final DeveloperConverter developerConverter;
 
     public ProjectService(ProjectRepository projectRepository,
                           ProjectDeveloperRelationRepository projectDeveloperRelationRepository,
-                          ProjectConverter projectConverter,
-                          DeveloperConverter developerConverter) {
+                          ProjectConverter projectConverter) {
         this.projectRepository = projectRepository;
         this.projectDeveloperRelationRepository = projectDeveloperRelationRepository;
         this.projectConverter = projectConverter;
-        this.developerConverter = developerConverter;
     }
 
     public ProjectDto create(ProjectDto projectDto) {
@@ -45,6 +41,11 @@ public class ProjectService {
 
     public void delete(ProjectDto projectDto) {
         projectRepository.delete(projectConverter.to(projectDto));
+    }
+    public List<ProjectDto> getAll(){
+        return projectRepository.findAll().stream()
+                .map(projectConverter::from)
+                .collect(Collectors.toList());
     }
     public Long addDeveloperToProject(Long projectId, Long developerId){
         ProjectDeveloperRelationDao projectDeveloperRelationDao = new ProjectDeveloperRelationDao();

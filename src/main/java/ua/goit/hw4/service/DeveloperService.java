@@ -1,10 +1,13 @@
 package ua.goit.hw4.service;
 
+import ua.goit.hw4.model.SkillLevel;
 import ua.goit.hw4.model.dao.DeveloperDao;
 import ua.goit.hw4.model.dao.DeveloperSkillRelationDao;
+import ua.goit.hw4.model.dao.SkillDao;
 import ua.goit.hw4.model.dto.DeveloperDto;
 import ua.goit.hw4.repository.DeveloperRepository;
 import ua.goit.hw4.repository.DeveloperSkillRelationRepository;
+import ua.goit.hw4.repository.SkillRepository;
 import ua.goit.hw4.service.conventer.DeveloperConverter;
 
 import java.util.List;
@@ -14,11 +17,13 @@ import java.util.stream.Collectors;
 public class DeveloperService {
     private final DeveloperRepository developerRepository;
     private final DeveloperSkillRelationRepository developerSkillRelationRepository;
+    private final SkillRepository skillRepository;
     private final DeveloperConverter developerConverter;
 
-    public DeveloperService(DeveloperRepository developerRepository, DeveloperSkillRelationRepository developerSkillRelationRepository, DeveloperConverter developerConverter) {
+    public DeveloperService(DeveloperRepository developerRepository, DeveloperSkillRelationRepository developerSkillRelationRepository, SkillRepository skillRepository, DeveloperConverter developerConverter) {
         this.developerRepository = developerRepository;
         this.developerSkillRelationRepository = developerSkillRelationRepository;
+        this.skillRepository = skillRepository;
         this.developerConverter = developerConverter;
     }
 
@@ -30,6 +35,11 @@ public class DeveloperService {
     public Optional<DeveloperDto> getById(Long id) {
         Optional<DeveloperDao> developerDao = developerRepository.findById(id);
         return developerDao.map(developerConverter::from);
+    }
+    public List<DeveloperDto> getAll(){
+        return developerRepository.findAll().stream()
+                .map(developerConverter::from)
+                .collect(Collectors.toList());
     }
 
     public DeveloperDto update(DeveloperDto developerDto) {
@@ -61,6 +71,22 @@ public class DeveloperService {
         dao.setDeveloperId(developerId);
         dao.setSkillId(skillId);
         developerSkillRelationRepository.delete(dao);
+    }
+    public List<DeveloperDto> getBySkillLevel(SkillLevel skillLevel){
+        List<Long> skillIds = skillRepository.findByLevel(skillLevel).stream()
+                .map(SkillDao::getId)
+                .collect(Collectors.toList());
+        return developerRepository.getBySkillIdList(skillIds).stream()
+                .map(developerConverter::from)
+                .collect(Collectors.toList());
+    }
+    public List<DeveloperDto> getBySkillLanguage(String language){
+        List<Long> skillIds = skillRepository.findByLanguage(language).stream()
+                .map(SkillDao::getId)
+                .collect(Collectors.toList());
+        return developerRepository.getBySkillIdList(skillIds).stream()
+                .map(developerConverter::from)
+                .collect(Collectors.toList());
     }
 
 }

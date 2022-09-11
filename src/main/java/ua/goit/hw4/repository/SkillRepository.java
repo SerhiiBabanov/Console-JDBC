@@ -17,7 +17,7 @@ public class SkillRepository implements Repository<SkillDao> {
     private static final String UPDATE = "update skills set language = ?, level = ? where id = ? " +
             "returning id, language, level";
     private static final String SELECT_ALL = "select id, language, level from skills";
-    private static final String SELECT_ALL_WITH_IDS = "select id, language, level from skills where id in (?)";
+    private static final String SELECT_ALL_WITH_IDS = "select id, language, level from skills where id in (%s)";
     private static final String SELECT_ALL_WITH_LANGUAGE = "select id, language, level from skills where language = ?";
     private static final String SELECT_ALL_WITH_LEVEL = "select id, language, level from skills where level = ?";
     private static final String SELECT_ALL_WITH_DEVELOPER_ID = "select id, developer_id, skill_id " +
@@ -123,10 +123,15 @@ public class SkillRepository implements Repository<SkillDao> {
     @Override
     public List<SkillDao> findByListOfID(List<Long> idList) {
         List<SkillDao> skillDaoList = new ArrayList<>();
-        String ids = idList.stream().map(String::valueOf).collect(Collectors.joining(", "));
+        String stmt = String.format(SELECT_ALL_WITH_IDS,
+                idList.stream()
+                        .map(v -> "?")
+                        .collect(Collectors.joining(", ")));
         try (Connection connection = manager.getConnection();
              PreparedStatement statement = connection.prepareStatement(SELECT_ALL_WITH_IDS)) {
-            statement.setString(1, ids);
+            int index = 1;
+            for( Long id : idList ) {
+                statement.setLong(  index++, id );}
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     SkillDao skillDao = new SkillDao();
