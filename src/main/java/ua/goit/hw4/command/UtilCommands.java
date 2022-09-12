@@ -6,12 +6,12 @@ import ua.goit.hw4.view.View;
 
 import java.util.List;
 
-public class SalaryCommands implements Command{
-    private static final String SALARY_COMMANDS = "salary";
+public class UtilCommands implements Command{
+    private static final String SALARY_COMMANDS = "util";
     private final View view;
     private final DeveloperService developerService;
 
-    public SalaryCommands(View view, DeveloperService developerService) {
+    public UtilCommands(View view, DeveloperService developerService) {
         this.view = view;
         this.developerService = developerService;
     }
@@ -25,9 +25,7 @@ public class SalaryCommands implements Command{
         String[] args = input.split(" ");
         try {
             switch (args[1]) {
-                case "-p":
-                    getTotalSalaryByProject(args);
-                    break;
+                case "-s" -> getTotalSalaryByProject(args);
             }
         } catch (RuntimeException e) {
             view.write("parameters incorrect");

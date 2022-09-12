@@ -36,7 +36,7 @@ public class ProjectCommands implements Command {
                 case "-d" -> delete(args);
                 case "-ad" -> addDeveloperToProject(args);
                 case "-dd" -> deleteDeveloperFromProject(args);
-                case "-pA" -> getAllWithCountOfDeveloper();
+                case "-ga" -> getAllWithCountOfDeveloper();
             }
         } catch (RuntimeException e) {
             view.write("parameters incorrect");

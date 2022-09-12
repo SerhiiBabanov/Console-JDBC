@@ -53,7 +53,7 @@ public class Main {
         commands.add(new DeveloperCommands(view, developerService));
         commands.add(new ProjectCommands(view, projectService, developerService));
         commands.add(new SkillComands(view, skillService));
-        commands.add(new SalaryCommands(view, developerService));
+        commands.add(new UtilCommands(view, developerService));
         commands.add(new Help(view));
         commands.add(new Exit(view));
 

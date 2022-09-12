@@ -32,9 +32,9 @@ public class DeveloperCommands implements Command {
                 case "-d" -> delete(args);
                 case "-as" -> addSkillToDeveloper(args);
                 case "-ds" -> deleteSkillFromDeveloper(args);
-                case "-allp" -> getAllDevelopersByProject(args);
-                case "-gslang" -> getAllDevelopersBySkillLanguage(args);
-                case "-gslev" -> getAllDeveloperBySkillLevel(args);
+                case "-gAp" -> getAllDevelopersByProject(args);
+                case "-gAlg" -> getAllDevelopersBySkillLanguage(args);
+                case "-gAlv" -> getAllDeveloperBySkillLevel(args);
             }
         } catch (RuntimeException e) {
             view.write("parameters incorrect");
