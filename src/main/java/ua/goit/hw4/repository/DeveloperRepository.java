@@ -22,7 +22,7 @@ public class DeveloperRepository implements Repository<DeveloperDao> {
     private static final String SELECT_ALL_WITH_SKILL_ID = "select id, developer_id, skill_id " +
             "from developer_skill_relation" +
             " where skill_id = ?";
-    private static final String SELECT_ALL_WITH_SKILL_ID_LIST = "select d.id, d.name, d.username, d.salary "+
+    private static final String SELECT_ALL_WITH_SKILL_ID_LIST = "select distinct d.id, d.name, d.username, d.salary "+
     "from developers d " +
     "inner join developer_skill_relation dsr on d.id = dsr.developer_id " +
     "inner join skills s on dsr.skill_id = s.id " +

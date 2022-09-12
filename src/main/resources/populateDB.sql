@@ -186,6 +186,6 @@ from developers as d,
      skills as s
 where d.username = 'kostiantyn_maslak'
   and s.language = 'JavaScript'
-  and s.level = 'Middle';
+  and s.level = 'Junior';
 
 
